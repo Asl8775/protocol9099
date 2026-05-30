@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PROTOCOL909: ГОСУДАРСТВЕННЫЙ МОНИТОРИНГ КВИИ РК</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
-
     <style>
         :root {
             --bg-dark: #000800;
@@ -18,523 +16,227 @@
             --danger-red: #ff2222;
             --glow: 0 0 15px rgba(0, 255, 0, 0.8);
         }
-
-        body {
-            background-color: var(--bg-dark); color: var(--pnv-text);
-            font-family: 'Fira Code', monospace; overflow-x: hidden; position: relative;
-        }
-
-        /* ЭФФЕКТ СЕТКИ МОНИТОРА */
-        body::before {
-            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 255, 0, 0.04) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.01));
-            z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none;
-        }
-
-        /* МАТРИЧНЫЙ БОКОВОЙ КАСКАД */
-        .matrix-side {
-            position: fixed; top: 0; width: 280px; height: 100%;
-            font-size: 0.95rem; font-weight: 700; color: #00ff00; opacity: 1.0;
-            font-family: 'Fira Code', monospace; white-space: pre; overflow: hidden;
-            pointer-events: none; z-index: 1; line-height: 1.2;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.9);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-dark); color: var(--pnv-text); font-family: 'Fira Code', monospace; overflow-x: hidden; position: relative; }
+        body::before { content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,255,0,0.04) 50%), linear-gradient(90deg, rgba(255,0,0,0.01), rgba(0,255,0,0.01), rgba(0,0,255,0.01)); z-index: 9999; background-size: 100% 4px, 6px 100%; pointer-events: none; }
+        .matrix-side { position: fixed; top: 0; width: 220px; height: 100%; font-size: 0.85rem; font-weight: 700; color: #00ff00; font-family: 'Fira Code', monospace; white-space: pre; overflow: hidden; pointer-events: none; z-index: 1; line-height: 1.2; text-shadow: 0 0 10px rgba(0,255,0,0.9); }
         .matrix-side span { color: #fff; text-shadow: 0 0 8px #fff; }
-        #matrix-left { left: 10px; text-align: left; }
-        #matrix-right { right: 10px; text-align: right; }
-
-        @media (min-width: 1400px) {
-            .main-container { padding-left: 140px; padding-right: 140px; }
-        }
-        .main-container { position: relative; z-index: 10; }
-
-        /* ЗАГРУЗЧИК */
-        #preloader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-dark);
-            z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
-        .emblem-container { width: 160px; height: 160px; margin-bottom: 30px; animation: spin 6s infinite linear; filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)); }
+        #matrix-left { left: 5px; } #matrix-right { right: 5px; text-align: right; }
+        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-dark); z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s; }
+        .emblem-container { width: 140px; height: 140px; margin-bottom: 25px; animation: spin 6s infinite linear; filter: drop-shadow(0 0 15px rgba(0,255,0,0.8)); }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* ИНТЕРФЕЙС ПАНЕЛЕЙ */
-        .navbar { background-color: #000000 !important; border-bottom: 2px solid var(--pnv-green); box-shadow: var(--glow); }
-        .navbar-brand { color: var(--pnv-green) !important; font-weight: bold; text-shadow: var(--glow); letter-spacing: 1px; }
-        .security-stamp { border: 2px dashed var(--danger-red); color: var(--danger-red); padding: 2px 10px; font-weight: bold; font-size: 0.8rem; }
-
-        .card { background-color: var(--bg-panel); border: 2px solid var(--pnv-green); border-radius: 0; margin-bottom: 15px; box-shadow: 0 0 20px rgba(0,30,0,0.5); }
-        .card-header { background-color: rgba(0, 255, 0, 0.12) !important; border-bottom: 2px solid var(--pnv-green); color: var(--pnv-green); font-weight: bold; text-shadow: var(--glow); font-size: 0.9rem; }
-
-        .table-responsive-container { max-height: 380px; overflow-y: auto; }
-        .table { color: var(--pnv-text) !important; border-color: var(--pnv-green); margin-bottom:0; font-size: 0.85rem; }
-        .table > :not(caption) > * > * { background-color: transparent; border-bottom-color: rgba(0, 255, 0, 0.15); padding: 8px 10px; }
-        .table thead th { color: var(--pnv-green) !important; border-bottom: 2px solid var(--pnv-green); background: #000a00; position: sticky; top: 0; z-index: 10; }
-
-        /* СИСТЕМА АЛЕРТОВ (ВЫЯВЛЕНИЕ УГРОЗ КНБ РК) */
-        .incident-box { height: 215px; overflow-y: auto; padding: 10px; font-size: 0.8rem; background: rgba(0,5,0,0.9); }
-        .incident-line { border-left: 3px solid var(--danger-red); background: rgba(255,0,0,0.08); padding: 6px; margin-bottom: 8px; border-radius: 0 4px 4px 0; animation: pulse-alert 2s infinite; }
-        @keyframes pulse-alert { 0% { background: rgba(255,0,0,0.05); } 50% { background: rgba(255,0,0,0.15); } 100% { background: rgba(255,0,0,0.05); } }
-
-        /* ЛЕНТА ПОРТОВ */
-        .port-stream-box { height: 380px; overflow-y: hidden; padding: 10px; font-size: 0.75rem; color: #00ff00; }
-        .port-line { border-bottom: 1px solid rgba(0, 255, 0, 0.1); padding: 3px 0; display: flex; justify-content: space-between; }
-
-        /* КНОПКИ УПРАВЛЕНИЯ ДЛЯ ГОС ОРГАНОВ */
-        .btn-gov { border: 1px solid var(--pnv-green); color: var(--pnv-green); background: transparent; border-radius: 0; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; transition: all 0.2s; }
+        .navbar { background-color: #000; border-bottom: 2px solid var(--pnv-green); box-shadow: var(--glow); padding: 6px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar-brand { color: var(--pnv-green); font-weight: bold; text-shadow: var(--glow); font-size: 1rem; }
+        .security-stamp { border: 2px dashed var(--danger-red); color: var(--danger-red); padding: 2px 10px; font-weight: bold; font-size: 0.75rem; }
+        .main-container { position: relative; z-index: 10; padding: 0 230px; }
+        .card { background-color: var(--bg-panel); border: 2px solid var(--pnv-green); margin-bottom: 12px; box-shadow: 0 0 20px rgba(0,30,0,0.5); }
+        .card-header { background-color: rgba(0,255,0,0.12); border-bottom: 2px solid var(--pnv-green); color: var(--pnv-green); font-weight: bold; font-size: 0.82rem; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
+        .card-body { padding: 0; }
+        .row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .col-7 { flex: 0 0 calc(58% - 6px); } .col-5 { flex: 0 0 calc(42% - 6px); }
+        .table-responsive-container { max-height: 360px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; color: var(--pnv-text); font-size: 0.8rem; }
+        th { color: var(--pnv-green); border-bottom: 2px solid var(--pnv-green); background: #000a00; position: sticky; top: 0; z-index: 10; padding: 7px 8px; text-align: left; }
+        td { border-bottom: 1px solid rgba(0,255,0,0.15); padding: 7px 8px; }
+        .incident-box { height: 195px; overflow-y: auto; padding: 8px; font-size: 0.78rem; background: rgba(0,5,0,0.9); }
+        .incident-line { border-left: 3px solid var(--danger-red); background: rgba(255,0,0,0.08); padding: 5px 8px; margin-bottom: 6px; border-radius: 0 4px 4px 0; animation: pulse-alert 2s infinite; }
+        @keyframes pulse-alert { 0%,100% { background: rgba(255,0,0,0.05); } 50% { background: rgba(255,0,0,0.15); } }
+        .port-stream-box { height: 360px; overflow-y: hidden; padding: 8px; font-size: 0.72rem; color: #00ff00; }
+        .port-line { border-bottom: 1px solid rgba(0,255,0,0.1); padding: 2px 0; display: flex; justify-content: space-between; }
+        .btn-gov { border: 1px solid var(--pnv-green); color: var(--pnv-green); background: transparent; font-size: 0.72rem; font-weight: bold; padding: 4px 10px; cursor: pointer; font-family: 'Fira Code', monospace; transition: all 0.2s; }
         .btn-gov:hover, .btn-gov.active { background: var(--pnv-green); color: #000; box-shadow: var(--glow); }
-        .btn-report { border: 1px solid var(--warning-yellow); color: var(--warning-yellow); }
+        .btn-report { border: 1px solid var(--warning-yellow); color: var(--warning-yellow); background: transparent; font-size: 0.72rem; font-weight: bold; padding: 4px 10px; cursor: pointer; font-family: 'Fira Code', monospace; }
         .btn-report:hover { background: var(--warning-yellow); color: #000; }
-
-        /* ОКНА И МОДАЛКИ */
         #search-overlay, #company-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 10050; }
-        #search-overlay { background: rgba(0, 8, 0, 0.96); }
-        #company-modal { background: rgba(0, 5, 0, 0.98); }
-        .search-box, .modal-terminal { background: #000; border: 2px solid var(--pnv-green); padding: 25px; box-shadow: var(--glow); }
-        .modal-terminal { width: 75%; max-width: 900px; }
-        .fast-data-box { background: rgba(0, 20, 0, 0.6); border: 1px dashed var(--pnv-green); padding: 15px; height: 260px; overflow-y: hidden; font-size: 0.85rem; color: #00ff00; }
-
-        .status-stable { color: var(--pnv-green) !important; font-weight: bold; text-shadow: var(--glow); }
-        .status-warning { color: var(--warning-yellow) !important; font-weight: bold; }
-        .status-crit { color: var(--danger-red) !important; font-weight: bold; animation: blink 0.8s infinite; }
-
-        .load-value { color: var(--pnv-green); text-shadow: var(--glow); font-size: 1.8rem; font-weight: bold; }
-        .load-label { color: var(--pnv-green-dim); font-size: 0.75rem; font-weight: bold; }
-        .cursor-blink::after { content: "_"; animation: blink 1s infinite; }
+        #search-overlay { background: rgba(0,8,0,0.96); } #company-modal { background: rgba(0,5,0,0.98); }
+        .search-box { background: #000; border: 2px solid var(--pnv-green); padding: 25px; box-shadow: var(--glow); width: 50%; }
+        .modal-terminal { background: #000; border: 2px solid var(--pnv-green); padding: 20px; box-shadow: var(--glow); width: 75%; max-width: 900px; }
+        .fast-data-box { background: rgba(0,20,0,0.6); border: 1px dashed var(--pnv-green); padding: 12px; height: 240px; overflow-y: hidden; font-size: 0.8rem; color: #00ff00; }
+        .status-stable { color: var(--pnv-green); font-weight: bold; } .status-warning { color: var(--warning-yellow); font-weight: bold; }
+        .status-crit { color: var(--danger-red); font-weight: bold; animation: blink 0.8s infinite; }
         @keyframes blink { 50% { opacity: 0.2; } }
+        .load-value { color: var(--pnv-green); text-shadow: var(--glow); font-size: 1.6rem; font-weight: bold; }
+        .load-label { color: var(--pnv-green-dim); font-size: 0.7rem; font-weight: bold; }
+        .load-value.text-danger { color: var(--danger-red); }
+        .cursor-blink::after { content: "_"; animation: blink 1s infinite; }
+        .metrics-row { display: flex; justify-content: space-around; align-items: center; text-align: center; padding: 10px; }
+        .metrics-divider { border-left: 2px solid var(--pnv-green); height: 50px; }
+        input { font-family: 'Fira Code', monospace; background: black; color: #00ff00; border: 1px solid #00ff00; padding: 8px 12px; width: 100%; font-size: 0.9rem; outline: none; }
+        input::placeholder { color: #1d9e1d; }
+        .filter-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; flex-wrap: wrap; }
+        .filter-label { font-size: 0.72rem; color: var(--pnv-green-dim); text-transform: uppercase; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #000800; } ::-webkit-scrollbar-thumb { background: var(--pnv-green); }
+        .modal-meta { display: flex; margin-bottom: 12px; }
+        .modal-meta-item { flex: 1; text-align: center; font-size: 0.78rem; padding: 8px; border-right: 1px solid rgba(0,255,0,0.3); }
+        .modal-meta-item:last-child { border-right: none; }
+        .modal-meta-label { color: var(--pnv-green-dim); text-transform: uppercase; font-size: 0.65rem; }
+        .modal-meta-val { color: white; font-weight: bold; font-size: 1rem; margin-top: 3px; }
+        .modal-header-row { display: flex; justify-content: space-between; border-bottom: 1px solid var(--pnv-green); padding-bottom: 8px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
-
-    <!-- МАТРИЧНЫЙ ФОН -->
-    <div id="matrix-left" class="matrix-side"></div>
-    <div id="matrix-right" class="matrix-side"></div>
-
-    <!-- ЭКРАН ЗАГРУЗКИ С СИМВОЛИКОЙ -->
-    <div id="preloader">
-        <div class="emblem-container">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="46" fill="none" stroke="#00ff00" stroke-width="1.5" />
-                <circle cx="50" cy="50" r="14" fill="none" stroke="#00ff00" stroke-width="2" />
-                <path d="M 36 50 L 64 50 M 50 36 L 50 64" stroke="#00ff00" stroke-width="1.5" />
-                <text font-family="monospace" font-size="5.5" fill="#00ff00" font-weight="bold" letter-spacing="1">
-                    <tspan x="50" y="82" text-anchor="middle">QAZAQSTAN</tspan>
-                </text>
-            </svg>
-        </div>
-        <div id="boot-status" class="cursor-blink">ИНИЦИАЛИЗАЦИЯ НАЦИОНАЛЬНОГО СГС...</div>
+<div id="matrix-left" class="matrix-side"></div>
+<div id="matrix-right" class="matrix-side"></div>
+<div id="preloader">
+    <div class="emblem-container">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" fill="none" stroke="#00ff00" stroke-width="1.5"/>
+            <circle cx="50" cy="50" r="14" fill="none" stroke="#00ff00" stroke-width="2"/>
+            <path d="M 36 50 L 64 50 M 50 36 L 50 64" stroke="#00ff00" stroke-width="1.5"/>
+            <text font-family="monospace" font-size="5.5" fill="#00ff00" font-weight="bold" letter-spacing="1"><tspan x="50" y="82" text-anchor="middle">QAZAQSTAN</tspan></text>
+        </svg>
     </div>
-
-    <!-- ТАКТИЧЕСКИЙ ПЕРЕХВАТ ОБЪЕКТА -->
-    <div id="search-overlay">
-        <div class="search-box style-gov" style="width: 50%;">
-            <div style="color:var(--pnv-green); font-weight:bold; margin-bottom:10px;">> СЛУЖБА ДИАГНОСТИКИ КВИИ РК:</div>
-            <input type="text" id="search-field" class="form-control bg-black text-success border-success" placeholder="Введите название ведомства..." autocomplete="off" style="font-family:'Fira Code';">
-            <div style="color:var(--pnv-green-dim); font-size:0.8rem; margin-top:10px;">Нажмите [ENTER] для вывода карточки инцидентов. Отмена — [ESC]</div>
-        </div>
+    <div id="boot-status" class="cursor-blink" style="color:var(--pnv-green); font-size:0.9rem;">ИНИЦИАЛИЗАЦИЯ НАЦИОНАЛЬНОГО СГС...</div>
+</div>
+<div id="search-overlay"><div class="search-box">
+    <div style="color:var(--pnv-green); font-weight:bold; margin-bottom:10px;">> СЛУЖБА ДИАГНОСТИКИ КВИИ РК:</div>
+    <input type="text" id="search-field" placeholder="Введите название ведомства..." autocomplete="off">
+    <div style="color:var(--pnv-green-dim); font-size:0.75rem; margin-top:10px;">ENTER — вывод карточки. ESC — отмена</div>
+</div></div>
+<div id="company-modal"><div class="modal-terminal">
+    <div class="modal-header-row">
+        <span id="modal-company-title" style="color:var(--pnv-green); font-weight:bold; font-size:0.85rem;">> ОПЕРАТИВНЫЙ КАНАЛ СГС РК</span>
+        <span style="color:var(--warning-yellow); font-size:0.75rem;">[РЕЖИМ ПЕРЕХВАТА ОНЛАЙН]</span>
     </div>
-
-    <!-- КАРТОЧКА ГЛУБОКОГО АНАЛИЗА -->
-    <div id="company-modal">
-        <div class="modal-terminal">
-            <div class="d-flex justify-content-between border-bottom border-success pb-2 mb-3">
-                <span id="modal-company-title" style="color:var(--pnv-green); font-weight:bold;">> ПОДРОБНЫЙ ТАКТИЧЕСКИЙ АНАЛИЗ УЗЛА</span>
-                <span style="color:var(--warning-yellow); font-size:0.8rem;">[РЕЖИМ ПЕРЕХВАТА ОНЛАЙН]</span>
-            </div>
-            <div class="row text-center mb-3 text-uppercase" style="font-size:0.8rem;">
-                <div class="col-4">💻 IP АДРЕС: <span id="modal-company-ip" class="text-white d-block font-weight-bold">0.0.0.0</span></div>
-                <div class="col-4">⏱️ ЗАДЕРЖКА: <span id="modal-company-ping" class="text-success d-block font-weight-bold">0 ms</span></div>
-                <div class="col-4">🛡️ НАДЕЖНОСТЬ ШЛЮЗА: <span id="modal-company-stab" class="text-success d-block font-weight-bold">100%</span></div>
-            </div>
-            <div class="fast-data-box" id="modal-fast-stream"></div>
-            <div class="text-end mt-3">
-                <button class="btn-gov" onclick="closeCompanyModal()">ЗАКРЫТЬ МОНИТОР (ESC)</button>
-            </div>
-        </div>
+    <div class="modal-meta">
+        <div class="modal-meta-item"><div class="modal-meta-label">💻 IP / ХОСТ</div><div class="modal-meta-val" id="modal-company-ip">—</div></div>
+        <div class="modal-meta-item"><div class="modal-meta-label">⏱️ ЗАДЕРЖКА</div><div class="modal-meta-val" style="color:var(--pnv-green)" id="modal-company-ping">—</div></div>
+        <div class="modal-meta-item"><div class="modal-meta-label">🛡️ НАДЁЖНОСТЬ</div><div class="modal-meta-val" style="color:var(--pnv-green)" id="modal-company-stab">—</div></div>
     </div>
-
-    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
-    <div class="main-container">
-        <!-- ВЕРХНЯЯ СЛУЖЕБНАЯ ПАНЕЛЬ -->
-        <nav class="navbar navbar-dark py-1">
-            <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1 cursor-blink" style="font-size: 1.05rem;">
-                    🇰🇿 protocol909 by Asylmurat // monitoring
-                </span>
-                <div class="d-flex align-items-center gap-3">
-                    <button class="btn-gov btn-report" onclick="exportReport()">📋 СФОРМИРОВАТЬ РАПОРТ ДЛЯ КНБ / ГТС</button>
-                    <div class="security-stamp">ГОС. КОНТРОЛЬ СЕКРЕТНО</div>
-                </div>
-            </div>
-        </nav>
-
-        <div class="container-fluid mt-3 px-4">
-
-            <!-- ПАНЕЛЬ УПРАВЛЕНИЯ ФИЛЬТРАМИ -->
-            <div class="row mb-3">
-                <div class="col-12 d-flex gap-2">
-                    <span class="align-self-center me-2 text-uppercase" style="font-size:0.75rem; color:var(--pnv-green-dim)">Фильтрация секторов:</span>
-                    <button class="btn-gov active" onclick="filterSector('all', this)">ВСЕ ОБЪЕКТЫ (50)</button>
-                    <button class="btn-gov" onclick="filterSector('gov', this)">⚡ МИНИСТЕРСТВА И ВЕДОМСТВА</button>
-                    <button class="btn-gov" onclick="filterSector('energy', this)">🔥 КРИТИЧЕСКАЯ ИНФРАСТРУКТУРА</button>
-                    <button class="btn-gov" onclick="filterSector('fin', this)">💰 ФИНАНСОВЫЙ СЕКТОР</button>
-                    <div class="ms-auto text-end align-self-center text-muted" style="font-size:0.7rem;">Горячая клавиша глубокой проверки: <b class="text-success">CTRL + R</b></div>
-                </div>
-            </div>
-
-            <!-- СИСТЕМА АВТОМАТИЧЕСКОГО ВЫЯВЛЕНИЯ КИБЕР-ИНЦИДЕНТОВ -->
-            <div class="row mb-3">
-                <div class="col-12">
-                    <div class="card" style="margin-bottom:0;">
-                        <div class="card-header d-flex justify-content-between align-items-center py-1">
-                            <span>🚨 СИСТЕМА ОНЛАЙН-ВЫЯВЛЕНИЯ КИБЕРУГРОЗ (ПРОТОКОЛ ЕЦМЛК)</span>
-                            <span class="text-danger font-weight-bold animate-blink" id="threat-indicator">РЕЖИМ ЗАЩИТЫ: АКТИВЕН</span>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="incident-box" id="live-incidents-box">
-                                <!-- Сюда скрипт динамически выбрасывает сгенерированные атаки -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!-- ТАБЛИЦА ОБЪЕКТОВ -->
-                <div class="col-md-7">
-                    <div class="card">
-                        <div class="card-header">> СТАТУС СОЕДИНЕНИЯ И ОТКАЗОУСТОЙЧИВОСТИ УЗЛОВ КВИИ РК</div>
-                        <div class="card-body p-0 table-responsive-container">
-                            <table class="table" id="network-table">
-                                <thead>
-                                    <tr>
-                                        <th>НАИМЕНОВАНИЕ УЗЛА / СЕКТОР</th>
-                                        <th>СЕТЕВОЙ МАРШРУТ</th>
-                                        <th>ОТКЛИК</th>
-                                        <th>ОТКАЗОУСТОЙЧИВОСТЬ</th>
-                                        <th>СТАТУС ЕЦМЛК</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="network-tbody">
-                                    <tr><td colspan="5" class="text-center text-muted py-4">ЗАГРУЗКА НАЦИОНАЛЬНОГО РЕЕСТРА ОБЪЕКТОВ...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ЖИВОЙ СЕТЕВОЙ АНАЛИЗАТОР -->
-                <div class="col-md-5">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span>> ИНСПЕКТОР СЕТЕВЫХ ШЛЮЗОВ (ГЛУБОКОЕ СКАНИРОВАНИЕ ТРАФИКА)</span>
-                            <span style="font-size:0.7rem; color:var(--pnv-green); font-weight:bold;">LIVE PCAP STREAM</span>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="port-stream-box" id="port-live-logs"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ИНФОРМАЦИОННЫЕ МЕТРИКИ -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-body d-flex justify-content-around text-center py-2">
-                            <div>
-                                <div class="load-label">ОБЩИЙ ВХОДЯЩИЙ ПОТОК МАГИСТРАЛЕЙ РК</div>
-                                <div class="load-value" id="bandwidth-val">342.40 Гбит/с</div>
-                            </div>
-                            <div style="border-left: 2px solid var(--pnv-green);"></div>
-                            <div>
-                                <div class="load-label">ИНТЕНСИВНОСТЬ ПАКЕТНОЙ НАГРУЗКИ ШЛЮЗОВ</div>
-                                <div class="load-value" id="packets-val">84,500 Пакет/с</div>
-                            </div>
-                            <div style="border-left: 2px solid var(--pnv-green);"></div>
-                            <div>
-                                <div class="load-label">ЗАБЛОКИРОВАНО АТАК ЗА СУТКИ (ПРОТОКОЛ ГТС)</div>
-                                <div class="load-value text-danger" id="blocked-attacks-count">1,402</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+    <div class="fast-data-box" id="modal-fast-stream"></div>
+    <div style="text-align:right; margin-top:12px;"><button class="btn-gov" onclick="closeCompanyModal()">ЗАКРЫТЬ (ESC)</button></div>
+</div></div>
+<div class="main-container">
+    <nav class="navbar">
+        <span class="navbar-brand cursor-blink">🇰🇿 protocol909 by Asylmurat // monitoring</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button class="btn-report" onclick="exportReport()">📋 РАПОРТ ДЛЯ КНБ / ГТС</button>
+            <div class="security-stamp">ГОС. КОНТРОЛЬ СЕКРЕТНО</div>
         </div>
+    </nav>
+    <div style="padding:12px 0;">
+        <div class="filter-row">
+            <span class="filter-label">Фильтрация:</span>
+            <button class="btn-gov active" onclick="filterSector('all',this)">ВСЕ ОБЪЕКТЫ</button>
+            <button class="btn-gov" onclick="filterSector('gov',this)">⚡ МИНИСТЕРСТВА</button>
+            <button class="btn-gov" onclick="filterSector('energy',this)">🔥 ИНФРАСТРУКТУРА</button>
+            <button class="btn-gov" onclick="filterSector('fin',this)">💰 ФИНАНСЫ</button>
+            <div style="margin-left:auto; font-size:0.68rem; color:#555;">Поиск: <b style="color:var(--pnv-green)">CTRL+R</b></div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span>🚨 СИСТЕМА ОНЛАЙН-ВЫЯВЛЕНИЯ КИБЕРУГРОЗ (ПРОТОКОЛ ЕЦМЛК)</span>
+                <span style="color:var(--danger-red); font-weight:bold;" id="threat-indicator">РЕЖИМ ЗАЩИТЫ: АКТИВЕН</span>
+            </div>
+            <div class="card-body"><div class="incident-box" id="live-incidents-box"></div></div>
+        </div>
+        <div class="row">
+            <div class="col-7"><div class="card">
+                <div class="card-header">> СТАТУС УЗЛОВ КВИИ РК</div>
+                <div class="card-body table-responsive-container">
+                    <table><thead><tr>
+                        <th>НАИМЕНОВАНИЕ УЗЛА</th><th>МАРШРУТ</th><th>ОТКЛИК</th><th>УСТОЙЧИВОСТЬ</th><th>СТАТУС</th>
+                    </tr></thead><tbody id="network-tbody"><tr><td colspan="5" style="text-align:center;color:#555;padding:20px;">ЗАГРУЗКА...</td></tr></tbody></table>
+                </div>
+            </div></div>
+            <div class="col-5"><div class="card">
+                <div class="card-header"><span>> ИНСПЕКТОР ШЛЮЗОВ</span><span style="font-size:0.68rem;color:var(--pnv-green);font-weight:bold;">LIVE PCAP</span></div>
+                <div class="card-body"><div class="port-stream-box" id="port-live-logs"></div></div>
+            </div></div>
+        </div>
+        <div class="card"><div class="card-body metrics-row">
+            <div><div class="load-label">ВХОДЯЩИЙ ПОТОК</div><div class="load-value" id="bandwidth-val">342.40 Гбит/с</div></div>
+            <div class="metrics-divider"></div>
+            <div><div class="load-label">ПАКЕТНАЯ НАГРУЗКА</div><div class="load-value" id="packets-val">84,500 Пакет/с</div></div>
+            <div class="metrics-divider"></div>
+            <div><div class="load-label">ЗАБЛОКИРОВАНО АТАК</div><div class="load-value text-danger" id="blocked-attacks-count">1,402</div></div>
+        </div></div>
     </div>
-
-    <!-- ТЕГ СКРИПТОВ // ВЕСЬ JAVASCRIPT ТУТ -->
-    <script>
-        // НАСТОЯЩАЯ ВЫГРУЗКА ОФИЦИАЛЬНОГО РАПОРТА В ТЕКСТОВЫЙ ФАЙЛ (.TXT)
-        function exportReport() {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString();
-            const timeStr = now.toLocaleTimeString();
-
-            const blockedCount = document.getElementById('blocked-attacks-count').innerText;
-
-            let reportContent = `=====================================================================\n`;
-            reportContent += `ГОСУДАРСТВЕННАЯ ТЕХНИЧЕСКАЯ СЛУЖБА РК // КОМИТЕТ ИНФОРМАЦИОННОЙ БЕЗОПАСНОСТИ\n`;
-            reportContent += `СИСТЕМА АВТОМАТИЧЕСКОГО ВЫЯВЛЕНИЯ КИБЕРАТАК НА ОБЪЕКТЫ КВИИ РК\n`;
-            reportContent += `=====================================================================\n\n`;
-            reportContent += `ДАТА ФОРМИРОВАНИЯ: ${dateStr}\n`;
-            reportContent += `ВРЕМЯ ФОРМИРОВАНИЯ: ${timeStr} (Астана)\n`;
-            reportContent += `СТАТУС СИСТЕМЫ: АКТИВЕН // ПОД ПРЯМЫМ КОНТРОЛЕМ ЕЦМЛК\n`;
-            reportContent += `ЗАБЛОКИРОВАНО КИБЕРАТАК ЗА ТЕКУЩИЕ СУТКИ: ${blockedCount}\n\n`;
-            reportContent += `[СПИСОК ПОСЛЕДНИХ ИНЦИДЕНТОВ ИЗ ЖУРНАЛА СГС]:\n`;
-
-            const incidents = document.querySelectorAll('.incident-line');
-            if (incidents.length === 0) {
-                reportContent += `- Критических инцидентов ИБ в текущую сессию не зафиксировано.\n`;
-            } else {
-                incidents.forEach((inc, index) => {
-                    let cleanText = inc.innerText.replace(/\s+/g, ' ').trim();
-                    reportContent += `${index + 1}. ${cleanText}\n---------------------------------------------------------------------\n`;
-                });
-            }
-
-            reportContent += `\nВНИМАНИЕ: Данный документ сформирован автоматически аналитическим модулем PROTOCOL909.\n`;
-            reportContent += `Файл зашифрован по протоколу ГОСТ 34.311 и готов к передаче в Национальный координационный центр информационной безопасности (НКЦИБ).\n`;
-            reportContent += `=====================================================================\n`;
-
-            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-            const link = document.createElement('a');
-            const fileName = `RAPORT_KVII_${dateStr.replace(/\./g, '_')}.txt`;
-
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // СКРИПТ КАСКАДНОЙ МАТРИЦЫ ПО БОКАМ ЭКРАНА
-        const chars = "0101010101ABCDEF#$@%&*()<>[]{}+=-_";
-        const maxLines = 50; const widthChars = 24;
-        function generateMatrixLine() {
-            let line = "";
-            for (let i = 0; i < widthChars; i++) {
-                if(Math.random() > 0.96) line += "<span>" + chars[Math.floor(Math.random() * chars.length)] + "</span>";
-                else line += Math.random() > 0.15 ? chars[Math.floor(Math.random() * chars.length)] : " ";
-            }
-            return line;
-        }
-        const leftMatrix = document.getElementById('matrix-left');
-        const rightMatrix = document.getElementById('matrix-right');
-        let leftLines = Array(maxLines).fill("").map(() => generateMatrixLine());
-        let rightLines = Array(maxLines).fill("").map(() => generateMatrixLine());
-        setInterval(() => {
-            leftLines.shift(); leftLines.push(generateMatrixLine());
-            rightLines.shift(); rightLines.push(generateMatrixLine());
-            if(leftMatrix && rightMatrix) { leftMatrix.innerHTML = leftLines.join("\n"); rightMatrix.innerHTML = rightLines.join("\n"); }
-        }, 110);
-
-        // КЛАССИФИКАЦИЯ КОМПАНИЙ ПО СЕКТОРАМ
-        function getSector(name) {
-            const n = name.toLowerCase();
-            if (n.includes('министерство') || n.includes('комитет') || n.includes('акимат') || n.includes('цор') || n.includes('электрон')) return 'gov';
-            if (n.includes('казатомпром') || n.includes('кегок') || n.includes('мунай') || n.includes('газ') || n.includes('тепло') || n.includes('энерго') || n.includes('грэс') || n.includes('водоканал')) return 'energy';
-            return 'fin';
-        }
-
-        function filterSector(sector, btn) {
-            document.querySelectorAll('.btn-gov').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const rows = document.querySelectorAll('#network-tbody tr');
-            rows.forEach(row => {
-                if (sector === 'all') { row.style.display = ''; return; }
-                const secAttr = row.getAttribute('data-sector');
-                row.style.display = (secAttr === sector) ? '' : 'none';
-            });
-        }
-
-        // АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ КИБЕРАТАК
-        const incidentBox = document.getElementById('live-incidents-box');
-        const attackTypes = [
-            { title: "Попытка подбора паролей (Brute-Force SSH)", crit: "СРЕДНИЙ", desc: "Фиксация множественных авторизаций из внешней подсети." },
-            { title: "Сетевой аномальный всплеск (DDoS Syn-Flood)", crit: "ВЫСОКИЙ", desc: "Резкое падение пропускной способности маршрутизатора КВИИ." },
-            { title: "Обнаружен подозрительный фишинговый вектор (Mail Gateway Scam)", crit: "НИЗКИЙ", desc: "Блокировка вредоносного вложения в почтовом домене." },
-            { title: "Фиксация несанкционированного сканирования портов (Nmap Recon)", crit: "СРЕДНИЙ", desc: "Попытка сбора заголовков веб-сервера государственного узла." }
-        ];
-
-        let totalBlocked = 1402;
-
-        function triggerRandomAttack(companies) {
-            if (!companies || companies.length === 0 || !incidentBox) return;
-            const targetCompany = companies[Math.floor(Math.random() * companies.length)];
-            const attack = attackTypes[Math.floor(Math.random() * attackTypes.length)];
-
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString();
-
-            const incLine = document.createElement('div');
-            incLine.className = 'incident-line';
-            if(attack.crit === 'ВЫСОКИЙ') incLine.style.borderColor = 'var(--danger-red)';
-            else if(attack.crit === 'СРЕДНИЙ') incLine.style.borderColor = 'var(--warning-yellow)';
-            else incLine.style.borderColor = 'var(--pnv-green)';
-
-            incLine.innerHTML = `
-                <div class="d-flex justify-content-between font-weight-bold">
-                    <span style="color:var(--danger-red);">💥 ОБНАРУЖЕНА УГРОЗА // УЗЕЛ: ${targetCompany.name}</span>
-                    <span style="color:var(--pnv-text)">КРИТИЧНОСТЬ: ${attack.crit} | ВРЕМЯ: ${timeStr}</span>
-                </div>
-                <div style="color:var(--pnv-green-dim); margin-top:2px;">
-                    <b>Тип инцидента:</b> ${attack.title} <br>
-                    <b>Описание ГТС:</b> ${attack.desc} -> <span class="text-success">Следствие: Трафик перенаправлен на очистку через резервный шлюз ЕЦМЛК.</span>
-                </div>
-            `;
-
-            if(incidentBox.children.length > 10) incidentBox.removeChild(incidentBox.firstChild);
-            incidentBox.appendChild(incLine);
-            incidentBox.scrollTop = incidentBox.scrollHeight;
-
-            totalBlocked += 1;
-            document.getElementById('blocked-attacks-count').innerText = totalBlocked.toLocaleString();
-
-            const rows = document.querySelectorAll('#network-tbody tr');
-            rows.forEach(r => {
-                if(r.innerHTML.includes(targetCompany.name)) {
-                    const statusTd = r.querySelector('.sec-status');
-                    if(statusTd) {
-                        statusTd.className = "sec-status status-crit";
-                        statusTd.innerText = "🛑 АТАКА ПЕРЕХВАЧЕНА";
-                        setTimeout(() => {
-                            statusTd.className = "sec-status status-stable";
-                            statusTd.innerText = "СТАБИЛЕН";
-                        }, 4000);
-                    }
-                }
-            });
-        }
-
-        // ЖИВОЙ СЕТЕВОЙ АНАЛИЗАТОР ШЛЮЗОВ
-        const portContainer = document.getElementById('port-live-logs');
-        const commonPorts = [21, 22, 23, 25, 53, 80, 110, 443, 1433, 3306, 3389, 8080];
-        setInterval(() => {
-            if(!portContainer) return;
-            if(portContainer.children.length > 14) portContainer.removeChild(portContainer.firstChild);
-
-            const randPort = Math.random() > 0.6 ? commonPorts[Math.floor(Math.random()*commonPorts.length)] : Math.floor(Math.random()*65000 + 100);
-            const statusText = Math.random() > 0.88 ? '<span style="color:var(--danger-red);">🛑 DROP_UNAUTHORIZED</span>' : '<span style="color:var(--pnv-green-dim);">ACCEPT_FORWARD</span>';
-            const timeStr = new Date().toLocaleTimeString() + `.${String(new Date().getMilliseconds()).padStart(3, '0')}`;
-
-            const newLine = document.createElement('div');
-            newLine.className = 'port-line';
-            newLine.innerHTML = `<span>[${timeStr}] ETH0 -> PORT:${randPort}</span><span>${statusText}</span>`;
-            portContainer.appendChild(newLine);
-            portContainer.scrollTop = portContainer.scrollHeight;
-        }, 250);
-
-        // ПОИСК (CTRL + R)
-        const searchOverlay = document.getElementById('search-overlay');
-        const searchField = document.getElementById('search-field');
-        const compModal = document.getElementById('company-modal');
-        const streamBox = document.getElementById('modal-fast-stream');
-
-        let globalNetworkData = {}; let fastStreamInterval = null; let companyArrayForAttacks = [];
-
-        window.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r') {
-                e.preventDefault(); compModal.style.display = 'none'; clearInterval(fastStreamInterval);
-                searchOverlay.style.display = 'flex'; searchField.value = ""; searchField.focus();
-            }
-            if (e.key === 'Escape') { searchOverlay.style.display = 'none'; closeCompanyModal(); }
-        });
-
-        searchField.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const query = this.value.trim().toLowerCase(); if (!query) return;
-                let foundName = null; let foundInfo = null;
-                for (const [name, info] of Object.entries(globalNetworkData)) {
-                    if (name.toLowerCase().includes(query) || info.host.toLowerCase().includes(query)) {
-                        foundName = name; foundInfo = info; break;
-                    }
-                }
-                searchOverlay.style.display = 'none';
-                if (foundName && foundInfo) openCompanyModal(foundName, foundInfo);
-                else alert("Государственный узел инфраструктуры отсутствует в реестре КВИИ.");
-            }
-        });
-
-        function openCompanyModal(name, info) {
-            document.getElementById('modal-company-title').innerText = `> ОПЕРАТИВНЫЙ КАНАЛ СГС РК // ОБЪЕКТ КВИИ: ${name}`;
-            document.getElementById('modal-company-ip').innerText = info.host;
-            document.getElementById('modal-company-ping').innerText = info.status === 'Online' ? `${info.latency} ms` : 'DISCONNECTED';
-            document.getElementById('modal-company-stab').innerText = info.stability;
-            streamBox.innerHTML = ""; compModal.style.display = 'flex';
-            clearInterval(fastStreamInterval);
-
-            fastStreamInterval = setInterval(() => {
-                const now = new Date();
-                const timeStr = `${now.toLocaleTimeString()}.${String(now.getMilliseconds()).padStart(3, '0')}`;
-                const packets = Math.floor(Math.random() * 450 + 50);
-                const randomPort = [22, 80, 443, 8080][Math.floor(Math.random() * 4)];
-                const hex = "abcdef0123456789"; let hash = ""; for(let i=0; i<16; i++) hash += hex[Math.floor(Math.random()*16)];
-
-                streamBox.innerHTML += `[${timeStr}] СГС-ПАКЕТ -> Проверка хэша целостности ядра ПО... OK // Port:${randomPort} // SHA256: 0x${hash}...<br>`;
-                streamBox.scrollTop = streamBox.scrollHeight;
-            }, 50);
-        }
-
-        function closeCompanyModal() { compModal.style.display = 'none'; clearInterval(fastStreamInterval); }
-
-        // ПРЕЛОАДЕР СИСТЕМЫ
-        const bootStages = ["БЕЗОПАСНОЕ ПОДКЛЮЧЕНИЕ ГОСТ 34.311...", "ПОЛУЧЕНИЕ СПИСКА СУБЪЕКТОВ КВИИ РК...", "СИНХРОНИЗАЦИЯ С ЕЦМЛК ДЛЯ ОТСЛЕЖИВАНИЯ АТАК...", "СГС МОНИТОР ГОТОВ К РАБОТЕ."];
-        let stageIdx = 0;
-        const bootInterval = setInterval(() => {
-            if (stageIdx < bootStages.length) { document.getElementById('boot-status').innerText = bootStages[stageIdx]; stageIdx++; }
-            else { clearInterval(bootInterval); const loader = document.getElementById('preloader'); loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 800); }
-        }, 650);
-
-        // СНС СЕТЕВЫЕ КАНАЛЫ (МЕТРИКИ НАГРУЗКИ)
-        let currentBandwidth = 342.40; let currentPackets = 84500;
-        setInterval(() => {
-            const bandwidthEl = document.getElementById('bandwidth-val'); const packetsEl = document.getElementById('packets-val');
-            if(!bandwidthEl || !packetsEl) return;
-            let bChange = (Math.random() * 4 - 2); let pChange = Math.floor(Math.random() * 600 - 300);
-            currentBandwidth += bChange; currentPackets += pChange;
-            bandwidthEl.innerText = `▲ ${Math.abs(currentBandwidth).toFixed(2)} Гбит/с`;
-            packetsEl.innerText = `▲ ${Math.abs(currentPackets).toLocaleString()} Пакет/с`;
-        }, 1000);
-
-        // ЗАГРУЗКА ИЗ BACKEND API С КЛАССИФИКАЦИЕЙ СЕКТОРОВ
-        async function updateDashboard() {
-            try {
-                const response = await fetch('/api/status'); const data = await response.json();
-                globalNetworkData = data.network_status;
-                companyArrayForAttacks = [];
-
-                let netHtml = '';
-                for (const [name, info] of Object.entries(data.network_status)) {
-                    const sector = getSector(name);
-                    companyArrayForAttacks.push({ name: name, host: info.host });
-
-                    let displayStatus = 'СТАБИЛЕН'; let statusClass = 'status-stable';
-                    if (info.status === 'Offline') { displayStatus = '❌ СВЯЗЬ ОБОРВАНА'; statusClass = 'status-crit'; }
-                    else if (info.latency > 120 || parseInt(info.stability) < 100) { displayStatus = '⚠️ НЕСТАБИЛЕН'; statusClass = 'status-warning'; }
-                    const latencyText = info.status === 'Online' ? `${info.latency} ms` : '—';
-
-                    let sectorLabel = "⚡ ГОСОРГАН";
-                    if(sector === 'energy') sectorLabel = "🔥 СТРАТЕГ";
-                    if(sector === 'fin') sectorLabel = "💰 ФИНАНСЫ";
-
-                    netHtml += `<tr data-sector="${sector}">
-                        <td><span style="color: var(--pnv-text); font-weight: bold;">${name}</span><br><small style="color:var(--pnv-green-dim)">${sectorLabel}</small></td>
-                        <td style="font-family:'Fira Code'; color: #88ff88;">${info.host}</td>
-                        <td style="color: var(--pnv-green-dim); font-weight: bold;">${latencyText}</td>
-                        <td style="color: var(--pnv-green-dim); font-weight: bold;">${info.stability}</td>
-                        <td class="sec-status ${statusClass}">${displayStatus}</td>
-                    </tr>`;
-                }
-                document.getElementById('network-tbody').innerHTML = netHtml;
-            } catch (error) { console.error("Ошибка обновления интерфейса:", error); }
-        }
-
-        // Цикл выявления инцидентов ИБ раз в 4 секунды
-        setInterval(() => { if(companyArrayForAttacks.length > 0) triggerRandomAttack(companyArrayForAttacks); }, 4000);
-
-        setInterval(updateDashboard, 2000); updateDashboard();
-    </script>
+</div>
+<script>
+const TARGETS = {
+    "АО Самрук-Казына":{host:"sk.kz",sector:"energy"},"АО НК КазМунайГаз":{host:"kmg.kz",sector:"energy"},
+    "АО Казатомпром":{host:"kazatomprom.kz",sector:"energy"},"АО KEGOC":{host:"kegoc.kz",sector:"energy"},
+    "АО НК Казахстан Темир Жолы":{host:"railways.kz",sector:"energy"},
+    "Национальный Банк РК":{host:"nationalbank.kz",sector:"fin"},"АО Банк Развития Казахстана":{host:"kdb.kz",sector:"fin"},
+    "Казахстанская Фондовая Биржа KASE":{host:"kase.kz",sector:"fin"},"АО Казактелеком":{host:"telecom.kz",sector:"fin"},
+    "АО Казпочта":{host:"post.kz",sector:"fin"},"Правительство РК (МинЦифры)":{host:"mdai.gov.kz",sector:"gov"},
+    "Мин. Финансов РК":{host:"minfin.gov.kz",sector:"gov"},"Мин. Здравоохранения РК":{host:"dsm.gov.kz",sector:"gov"},
+    "Мин. Юстиции РК":{host:"adilet.gov.kz",sector:"gov"},"Мин. Обороны РК":{host:"mod.gov.kz",sector:"gov"},
+    "Мин. Внутренних Дел РК":{host:"mvd.gov.kz",sector:"gov"},"Генеральная Прокуратура РК":{host:"prokuror.gov.kz",sector:"gov"},
+    "Верховный Суд РК":{host:"sud.gov.kz",sector:"gov"},"Акорда (Президент РК)":{host:"akorda.kz",sector:"gov"},
+    "Электронное Правительство РК":{host:"egov.kz",sector:"gov"},"Google DNS":{host:"8.8.8.8",sector:"fin"},
+    "Cloudflare DNS":{host:"1.1.1.1",sector:"fin"},"Google":{host:"google.com",sector:"fin"},
+    "OpenAI":{host:"openai.com",sector:"fin"},"Microsoft Azure":{host:"azure.microsoft.com",sector:"fin"},
+    "Amazon AWS":{host:"aws.amazon.com",sector:"fin"},"GitHub":{host:"github.com",sector:"fin"},
+    "Тактический узел (Резерв)":{host:"localhost",sector:"gov"}
+};
+let networkState={}, stabilityHistory={};
+Object.keys(TARGETS).forEach(n=>{stabilityHistory[n]=Array(10).fill(1);networkState[n]={status:'Online',latency:Math.floor(Math.random()*80+10),stability:'100%'};});
+function simulateUpdate(){
+    Object.keys(TARGETS).forEach(n=>{
+        const off=Math.random()<0.04, lat=off?0:Math.floor(Math.random()*120+5);
+        stabilityHistory[n].push(off?0:1); if(stabilityHistory[n].length>20)stabilityHistory[n].shift();
+        const stab=Math.round((stabilityHistory[n].reduce((a,b)=>a+b,0)/stabilityHistory[n].length)*100);
+        networkState[n]={host:TARGETS[n].host,status:off?'Offline':'Online',latency:lat,stability:stab+'%',sector:TARGETS[n].sector};
+    }); renderTable();
+}
+function renderTable(){
+    const tbody=document.getElementById('network-tbody'); let html='';
+    for(const[n,i]of Object.entries(networkState)){
+        let ds='СТАБИЛЕН',sc='status-stable';
+        if(i.status==='Offline'){ds='❌ СВЯЗЬ ОБОРВАНА';sc='status-crit';}
+        else if(i.latency>100||parseInt(i.stability)<90){ds='⚠️ НЕСТАБИЛЕН';sc='status-warning';}
+        const sm={gov:'⚡ ГОСОРГАН',energy:'🔥 СТРАТЕГ',fin:'💰 ФИНАНСЫ'};
+        html+=`<tr data-sector="${i.sector}"><td><b>${n}</b><br><small style="color:var(--pnv-green-dim)">${sm[i.sector]}</small></td><td style="color:#88ff88;font-size:0.75rem">${i.host}</td><td style="color:var(--pnv-green-dim);font-weight:bold">${i.status==='Online'?i.latency+' ms':'—'}</td><td style="color:var(--pnv-green-dim);font-weight:bold">${i.stability}</td><td class="sec-status ${sc}">${ds}</td></tr>`;
+    } tbody.innerHTML=html; applyCurrentFilter();
+}
+let currentFilter='all';
+function filterSector(s,btn){currentFilter=s;document.querySelectorAll('.btn-gov').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyCurrentFilter();}
+function applyCurrentFilter(){document.querySelectorAll('#network-tbody tr').forEach(r=>{r.style.display=currentFilter==='all'||r.getAttribute('data-sector')===currentFilter?'':'none';});}
+const attackTypes=[
+    {title:"Brute-Force SSH",crit:"СРЕДНИЙ",desc:"Множественные неудачные авторизации из внешней подсети."},
+    {title:"DDoS Syn-Flood",crit:"ВЫСОКИЙ",desc:"Резкое падение пропускной способности маршрутизатора."},
+    {title:"Mail Gateway Scam",crit:"НИЗКИЙ",desc:"Блокировка вредоносного вложения в почтовом домене."},
+    {title:"Nmap Port Recon",crit:"СРЕДНИЙ",desc:"Попытка сбора заголовков веб-сервера узла."}
+];
+const incidentBox=document.getElementById('live-incidents-box'); let totalBlocked=1402;
+function triggerRandomAttack(){
+    const names=Object.keys(TARGETS), tn=names[Math.floor(Math.random()*names.length)], a=attackTypes[Math.floor(Math.random()*attackTypes.length)];
+    const div=document.createElement('div'); div.className='incident-line';
+    div.style.borderColor=a.crit==='ВЫСОКИЙ'?'var(--danger-red)':a.crit==='СРЕДНИЙ'?'var(--warning-yellow)':'var(--pnv-green)';
+    div.innerHTML=`<div style="display:flex;justify-content:space-between;font-weight:bold"><span style="color:var(--danger-red)">💥 УГРОЗА // ${tn}</span><span style="font-size:0.72rem">КРИТИЧНОСТЬ: ${a.crit} | ${new Date().toLocaleTimeString()}</span></div><div style="color:var(--pnv-green-dim);margin-top:3px;font-size:0.75rem"><b>Тип:</b> ${a.title} | ${a.desc} <span style="color:var(--pnv-green)">→ Трафик перенаправлен на ЕЦМЛК.</span></div>`;
+    if(incidentBox.children.length>10)incidentBox.removeChild(incidentBox.firstChild);
+    incidentBox.appendChild(div); incidentBox.scrollTop=incidentBox.scrollHeight;
+    totalBlocked++; document.getElementById('blocked-attacks-count').innerText=totalBlocked.toLocaleString();
+    document.querySelectorAll('#network-tbody tr').forEach(r=>{if(r.innerHTML.includes(tn)){const td=r.querySelector('.sec-status');if(td){td.className='sec-status status-crit';td.innerText='🛑 АТАКА ПЕРЕХВАЧЕНА';setTimeout(()=>{td.className='sec-status status-stable';td.innerText='СТАБИЛЕН';},4000);}}});
+}
+const portContainer=document.getElementById('port-live-logs'), commonPorts=[21,22,23,25,53,80,110,443,1433,3306,3389,8080];
+setInterval(()=>{
+    if(portContainer.children.length>14)portContainer.removeChild(portContainer.firstChild);
+    const rp=Math.random()>0.6?commonPorts[Math.floor(Math.random()*commonPorts.length)]:Math.floor(Math.random()*65000+100);
+    const st=Math.random()>0.88?'<span style="color:var(--danger-red)">🛑 DROP_UNAUTHORIZED</span>':'<span style="color:var(--pnv-green-dim)">ACCEPT_FORWARD</span>';
+    const t=new Date(), ts=`${t.toLocaleTimeString()}.${String(t.getMilliseconds()).padStart(3,'0')}`;
+    const l=document.createElement('div'); l.className='port-line';
+    l.innerHTML=`<span>[${ts}] ETH0 → PORT:${rp}</span>${st}`; portContainer.appendChild(l); portContainer.scrollTop=portContainer.scrollHeight;
+},240);
+let cb=342.40, cp=84500;
+setInterval(()=>{cb+=(Math.random()*4-2);cp+=Math.floor(Math.random()*600-300);document.getElementById('bandwidth-val').innerText=`▲ ${Math.abs(cb).toFixed(2)} Гбит/с`;document.getElementById('packets-val').innerText=`▲ ${Math.abs(cp).toLocaleString()} Пакет/с`;},1000);
+const chars="0101010101ABCDEF#$@%&*()<>[]{}+=-_", maxLines=55, wc=22;
+function genLine(){let l="";for(let i=0;i<wc;i++){if(Math.random()>0.96)l+=`<span>${chars[Math.floor(Math.random()*chars.length)]}</span>`;else l+=Math.random()>0.15?chars[Math.floor(Math.random()*chars.length)]:" ";}return l;}
+const lm=document.getElementById('matrix-left'), rm=document.getElementById('matrix-right');
+let ll=Array(maxLines).fill("").map(genLine), rl=Array(maxLines).fill("").map(genLine);
+setInterval(()=>{ll.shift();ll.push(genLine());rl.shift();rl.push(genLine());lm.innerHTML=ll.join("\n");rm.innerHTML=rl.join("\n");},110);
+const so=document.getElementById('search-overlay'), sf=document.getElementById('search-field'), cm=document.getElementById('company-modal'), sb=document.getElementById('modal-fast-stream');
+let fsi=null;
+window.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='r'){e.preventDefault();cm.style.display='none';clearInterval(fsi);so.style.display='flex';sf.value='';sf.focus();}if(e.key==='Escape'){so.style.display='none';closeCompanyModal();}});
+sf.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=sf.value.trim().toLowerCase();if(!q)return;let fn=null,fi=null;for(const[n,i]of Object.entries(networkState)){if(n.toLowerCase().includes(q)||i.host.toLowerCase().includes(q)){fn=n;fi=i;break;}}so.style.display='none';if(fn)openCompanyModal(fn,fi);else alert("Узел отсутствует в реестре КВИИ.");}});
+function openCompanyModal(n,i){document.getElementById('modal-company-title').innerText=`> ОБЪЕКТ КВИИ: ${n}`;document.getElementById('modal-company-ip').innerText=i.host;document.getElementById('modal-company-ping').innerText=i.status==='Online'?`${i.latency} ms`:'DISCONNECTED';document.getElementById('modal-company-stab').innerText=i.stability;sb.innerHTML='';cm.style.display='flex';clearInterval(fsi);fsi=setInterval(()=>{const now=new Date(),t=`${now.toLocaleTimeString()}.${String(now.getMilliseconds()).padStart(3,'0')}`;const hex="abcdef0123456789";let h='';for(let i=0;i<16;i++)h+=hex[Math.floor(Math.random()*16)];const p=[22,80,443,8080][Math.floor(Math.random()*4)];sb.innerHTML+=`[${t}] СГС-ПАКЕТ → Port:${p} SHA256:0x${h}...<br>`;sb.scrollTop=sb.scrollHeight;},50);}
+function closeCompanyModal(){cm.style.display='none';clearInterval(fsi);}
+function exportReport(){const now=new Date();let txt=`ГОСУДАРСТВЕННАЯ ТЕХНИЧЕСКАЯ СЛУЖБА РК\nPROTOCOL909 — РАПОРТ\nДАТА: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}\nАТАК ЗАБЛОКИРОВАНО: ${totalBlocked.toLocaleString()}\n\n[ИНЦИДЕНТЫ]:\n`;document.querySelectorAll('.incident-line').forEach((inc,i)=>{txt+=`${i+1}. ${inc.innerText.replace(/\s+/g,' ').trim()}\n---\n`;});const b=new Blob([txt],{type:'text/plain;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`RAPORT_${now.toLocaleDateString().replace(/\./g,'_')}.txt`;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+const bs=["БЕЗОПАСНОЕ ПОДКЛЮЧЕНИЕ ГОСТ 34.311...","ПОЛУЧЕНИЕ СПИСКА СУБЪЕКТОВ КВИИ РК...","СИНХРОНИЗАЦИЯ С ЕЦМЛК...","СГС МОНИТОР ГОТОВ К РАБОТЕ."];
+let si=0;const bi=setInterval(()=>{if(si<bs.length){document.getElementById('boot-status').innerText=bs[si];si++;}else{clearInterval(bi);const l=document.getElementById('preloader');l.style.opacity='0';setTimeout(()=>l.style.display='none',800);simulateUpdate();}},700);
+setInterval(simulateUpdate,2500); setInterval(triggerRandomAttack,4000);
+</script>
 </body>
 </html>
